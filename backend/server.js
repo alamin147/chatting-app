@@ -8,11 +8,11 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+app.use("/api/auth", authRoutes);
+
 app.get("/", (req, res) => {
   res.send("server is working");
 });
-
-app.use("/api/auth", authRoutes);
 
 app.listen(port, () => {
   const mongoDB = async () => {

@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-
 import { sendResponse } from "../../utils/responseData.js";
 import User from "../userModel/userModel.js";
+import { hashPassword } from "../../utils/hashPassword.js";
 
 const signup = async (req, res) => {
   try {
@@ -20,8 +20,15 @@ const signup = async (req, res) => {
     const user = await User.findOne({ $or: [{ username }, { email }] });
 
     if (user) {
-      return sendResponse(res, false, StatusCodes.CONFLICT, "User exits");
+      return sendResponse(
+        res,
+        false,
+        StatusCodes.CONFLICT,
+        "User Exits with same username or email"
+      );
     }
+
+    const hashPass = await hashPassword(password);
 
     const profilePic = "https://avatar.iran.liara.run/public/4";
 
@@ -29,7 +36,7 @@ const signup = async (req, res) => {
       name,
       username,
       email,
-      password,
+      password: hashPass,
       gender,
       profilePic,
     });
@@ -42,13 +49,14 @@ const signup = async (req, res) => {
       newUser
     );
   } catch (err) {
-    console.log(err);
+    console.log(err.message);
     return sendResponse(
       res,
       false,
       StatusCodes.INTERNAL_SERVER_ERROR,
-      "Internal Server Error. Try again"
+      err?.message ? err.message : "Internal Server Error. Try again"
     );
+    // next(err)
   }
 };
 
