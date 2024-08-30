@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../utils/responseData.js";
 import User from "../userModel/userModel.js";
 import { hashPassword } from "../../utils/hashPassword.js";
+import { tokenGenerator } from "../../utils/tokenGenerator.js";
 
 const signup = async (req, res) => {
   try {
@@ -41,6 +42,8 @@ const signup = async (req, res) => {
       profilePic,
     });
 
+    // console.log("neeeww", newUser);
+    tokenGenerator(newUser._id, res);
     return sendResponse(
       res,
       true,
@@ -49,7 +52,7 @@ const signup = async (req, res) => {
       newUser
     );
   } catch (err) {
-    console.log(err.message);
+    // console.log(err.message);
     return sendResponse(
       res,
       false,
