@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { sendResponse } from "../../utils/responseData.js";
 import User from "../userModel/userModel.js";
-import { hashPassword } from "../../utils/hashPassword.js";
+import { comparePass, hashPassword } from "../../utils/hashPassword.js";
 import { tokenGenerator } from "../../utils/tokenGenerator.js";
 
 const signup = async (req, res) => {
@@ -43,7 +43,14 @@ const signup = async (req, res) => {
     });
 
     // console.log("neeeww", newUser);
-    tokenGenerator(newUser._id, res);
+
+    const userInfo = {
+      username,
+      email,
+      profilePic,
+    };
+    tokenGenerator(userInfo, res);
+
     return sendResponse(
       res,
       true,
@@ -63,6 +70,44 @@ const signup = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    const foundUser = await User.findOne({ username });
+
+    // console.log(foundUser);
+    if (!foundUser) {
+      return sendResponse(res, false, StatusCodes.NOT_FOUND, "User not found");
+    }
+
+    const passMatch = await comparePass(password, foundUser?.password || "");
+
+    if (!passMatch) {
+      return sendResponse(
+        res,
+        false,
+        StatusCodes.BAD_REQUEST,
+        "Wrong Password"
+      );
+    }
+    const userInfo = {
+      username: foundUser?.username,
+      email: foundUser?.email,
+      profilePic: foundUser?.profilePic,
+    };
+    tokenGenerator(userInfo, res);
+    return sendResponse(res, true, StatusCodes.OK, "Logged in Successfully");
+  } catch (error) {
+    return sendResponse(
+      res,
+      false,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      err?.message ? err.message : "Internal Server Error. Try again"
+    );
+  }
+};
 export const authController = {
   signup,
+  login,
 };
