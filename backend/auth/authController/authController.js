@@ -98,7 +98,22 @@ const login = async (req, res) => {
     };
     tokenGenerator(userInfo, res);
     return sendResponse(res, true, StatusCodes.OK, "Logged in Successfully");
-  } catch (error) {
+  } catch (err) {
+    return sendResponse(
+      res,
+      false,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      err?.message ? err.message : "Internal Server Error. Try again"
+    );
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res.cookie("token", "", { maxAge: 0 });
+
+    return sendResponse(res, true, StatusCodes.OK, "Logged out Successfully");
+  } catch (err) {
     return sendResponse(
       res,
       false,
@@ -110,4 +125,5 @@ const login = async (req, res) => {
 export const authController = {
   signup,
   login,
+  logout,
 };
