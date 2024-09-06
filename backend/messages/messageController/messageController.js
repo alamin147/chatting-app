@@ -54,6 +54,35 @@ const sendMessage = async (req, res) => {
   }
 };
 
+const getMessages = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+
+    const ownId = req.user._id;
+
+    const conversation = await Conversation.findOne({
+      participants: { $all: [ownId, userId] },
+    }).populate("messages");
+
+    if (!conversation) conversation = [];
+    // console.log(conversation)
+    return sendResponse(
+      res,
+      true,
+      StatusCodes.OK,
+      "Messages retrived successfully",
+      conversation
+    );
+  } catch (err) {
+    return sendResponse(
+      res,
+      false,
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      err?.message ? err.message : "Internal Server Error. Try again"
+    );
+  }
+};
 export const messageController = {
   sendMessage,
+  getMessages,
 };
